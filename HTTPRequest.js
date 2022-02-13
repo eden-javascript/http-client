@@ -21,34 +21,31 @@ class HTTPRequest {
     });
   }
 
-  getResponse(response) {
-    return new Promise((resolve, reject) => {
-      if (error) {
-        reject(error);
-      }
-
-      resolve(response);
-    });
-  }
-
-  async sendRequest() {
+  async sendRequest(method = "GET", headers = "") {
     const port = 80;
     const ipAddress = await this.dns2ip();
 
-    this.socket.connect(port, ipAddress);
-    this.socket.on("connect", function () {
-      const requestMsg = `GET / HTTP/1.1\r\nHost: ${ipAddress}:${port}\r\n\r\n`;
-      const result = this.write(requestMsg);
+    return new Promise((resolve) => {
+      this.socket.connect(port, ipAddress);
+      this.socket.on("connect", function () {
+        const makeMsg = (ipAddress, port, method) => {
+          return `${method} / HTTP/1.1\r\nHost: ${ipAddress}:${port}\r\n${headers}\r\n\r\n`;
+        };
 
-      if (!result) {
-        throw new Error("요청 실패");
-      }
+        const requestMsg = makeMsg(ipAddress, port, method);
+        const result = this.write(requestMsg);
 
-      this.on("data", async function (data) {
-        const response = data.toString();
-        console.log(response);
+        if (!result) {
+          throw new Error("요청 실패");
+        }
 
-        this.destroy();
+        this.on("data", async function (data) {
+          const response = data.toString();
+
+          this.destroy();
+
+          resolve(response);
+        });
       });
     });
   }

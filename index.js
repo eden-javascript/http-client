@@ -1,6 +1,12 @@
 const { HTTPRequest } = require("./HTTPRequest");
 
-const address = "http://www.disney.co.kr";
-const request = new HTTPRequest(address);
+const main = async () => {
+  const address = "http://www.disney.co.kr";
 
-request.sendRequest();
+  const request = new HTTPRequest(address);
+  const response = await request.sendRequest();
+
+  console.log(response);
+};
+
+main();
